@@ -15,8 +15,6 @@ DOCKER_COMPOSE_FILE = "docker-compose.yml"
 CONFIG_FILE = "builderconfig.json"
 DEBUG = False
 
-# TODO2: extends steps with new one: newfile
-
 def run_system_command(command):
     """
     Run system command
