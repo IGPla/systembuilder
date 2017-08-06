@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  db_prod:
+    image: postgres
+  nginx_prod:
+    build: ./docker/nginx
+    command: /bin/bash /root/startup.sh
+    volumes:
+      - ./project/code/media:/var/www/media
+      - ./project/code/static:/var/www/static
+      - ./project/logs/nginx:/var/log/nginx
+      - ./project/config/nginx:/etc/nginx/sites-enabled
+    ports:
+      - "80:80"
+  web_prod:
+    build: ./docker/web
+    command: /bin/bash /root/startup.sh
+    volumes:
+      - ./project/code:/project/code
+      - ./project/config/uwsgi:/project/config
+      - ./project/logs/uwsgi:/var/log/uwsgi
+      - ./project/config/uwsgi_supervisor:/etc/supervisor/conf.d
+    depends_on:
+      - db_prod
+      - nginx_prod
+      

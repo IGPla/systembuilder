@@ -1,0 +1,179 @@
+{
+    "start": [
+	{
+	    "name": "remove old project",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/code"
+	},
+	{
+	    "name": "create project folder",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/code"
+	},
+	{
+	    "name": "create project static folder",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/code/static"
+	},
+	{
+	    "name": "create project media folder",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/code/media"
+	},
+	{
+	    "name": "remove old nginx config",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/config/nginx"
+	},
+	{
+	    "name": "create nginx config",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/config/nginx"
+	},
+	{
+	    "name": "remove old nginx logs",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/logs/nginx"
+	},
+	{
+	    "name": "create nginx logs",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/logs/nginx"
+	},
+	{
+	    "name": "remove old uwsgi config",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/config/uwsgi"
+	},
+	{
+	    "name": "create uwsgi config",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/config/uwsgi"
+	},
+	{
+	    "name": "remove old uwsgi logs",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/logs/uwsgi"
+	},
+	{
+	    "name": "create uwsgi logs",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/logs/uwsgi"
+	},
+	{
+	    "name": "remove old uwsgi supervisor config",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/logs/uwsgi_supervisor"
+	},
+	{
+	    "name": "create uwsgi supervisor config",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/logs/uwsgi_supervisor"
+	},
+	{
+	    "name": "copy common system requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(template_dir)s/systemrequirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/common_systemrequirements.txt"
+	},
+	{
+	    "name": "copy project system requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(project_dir)s/systemrequirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/project_systemrequirements.txt"
+	},
+	{
+	    "name": "copy common python requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(template_dir)s/requirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/common_requirements.txt"
+	},
+	{
+	    "name": "copy project python requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(project_dir)s/requirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/project_requirements.txt"
+	},
+	{
+	    "name": "create nginx configuration",
+	    "flag": "nginx",
+	    "action": "newfile",
+	    "filename": "%(project_dir)s/config/nginx/%(project_name)s.conf",
+	    "filecontent": "server {\n       listen 80 default_server;\n       server_name localhost;\n\n       access_log /var/log/nginx/nginx.access.log;\n       error_log /var/log/nginx/nginx.error.log;\n\n       location / {\n                uwsgi_pass web_prod:49001;\n                include uwsgi_params;\n        }\n\n        location /media/ {\n                 alias /var/www/media/;\n        }\n\n        location /static/ {\n                 alias /var/www/static/;\n        }\n}"
+	},
+	{
+	    "name": "build docker nginx prod",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s build nginx_prod"
+	},
+	{
+	    "name": "build docker web prod",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s build web_prod"
+	},
+	{
+	    "name": "create django project",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_prod django-admin.py startproject %(project_name)s ."
+	},
+	{
+	    "name": "run migrations",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_prod python3 manage.py migrate"
+	},
+	{
+	    "name": "initialize database setting",
+	    "flag": "new",
+	    "action": "replacement",
+	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
+	    "replace": {
+		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': 'db_prod', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
+		"ALLOWED_HOSTS": "ALLOWED_HOSTS = ['*']",
+		"DEBUG": "DEBUG = False"
+	    }
+	},
+	{
+	    "name": "create uwsgi configuration",
+	    "flag": "uwsgi",
+	    "action": "newfile",
+	    "filename": "%(project_dir)s/config/uwsgi/uwsgi.ini",
+	    "filecontent": "[uwsgi]\nautoload = true\nchdir=/project/code/\nmaster=true\nno-orphans=true\nlog-date=true\nvacuum=true\npidfile=/tmp/project.pid\nmax-requests=5000\nsocket=0.0.0.0:49001\nworkers=2\npythonpath=.\nenv=DJANGO_SETTINGS_MODULE=%(project_name)s.settings\nmodule = %(project_name)s.wsgi\ntouch-reload=/project/config/reload.txt\nuid = root\ngid = root"
+	},
+	{
+	    "name": "create reload file",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/config/uwsgi/reload.txt"
+	},
+	{
+	    "name": "create nginx configuration",
+	    "flag": "uwsgi",
+	    "action": "newfile",
+	    "filename": "%(project_dir)s/config/uwsgi_supervisor/%(project_name)s_uwsgi.conf",
+	    "filecontent": "[program:project_uwsgi]\ncommand=uwsgi /project/config/uwsgi.ini\nstdout_logfile=/var/log/uwsgi/project.log\nstderr_logfile=/var/log/uwsgi/project.err.log\nautostart=true\nautorestart=true\nredirect_stderr=true\nstopwaitsecs = 60\nstopsignal=INT"
+	}
+	
+    ]
+}

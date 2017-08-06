@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+  db_dev:
+    image: postgres
+  web_dev:
+    build: ./docker/web
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./project/code:/project/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_dev

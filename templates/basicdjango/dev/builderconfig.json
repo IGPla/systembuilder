@@ -1,0 +1,73 @@
+{
+    "start": [
+	{
+	    "name": "remove old project",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/code"
+	},
+	{
+	    "name": "create project folder",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/code"
+	},
+	{
+	    "name": "copy common system requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(template_dir)s/systemrequirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/common_systemrequirements.txt"
+	},
+	{
+	    "name": "copy project system requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(project_dir)s/systemrequirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/project_systemrequirements.txt"
+	},
+	{
+	    "name": "copy common python requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(template_dir)s/requirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/common_requirements.txt"
+	},
+	{
+	    "name": "copy project python requirements",
+	    "flag": "always",
+	    "action": "copyfile",
+	    "fromfile": "%(project_dir)s/requirements.txt",
+	    "tofile": "%(template_dir)s/docker/web/project_requirements.txt"
+	},
+	{
+	    "name": "build docker web dev",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s build web_dev"
+	},
+	{
+	    "name": "create django project",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_dev django-admin.py startproject %(project_name)s ."
+	},
+	{
+	    "name": "run migrations",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_dev python3 manage.py migrate"
+	},
+	{
+	    "name": "initialize database setting",
+	    "flag": "new",
+	    "action": "replacement",
+	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
+	    "replace": {
+		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': 'db_dev', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
+		"ALLOWED_HOSTS": "ALLOWED_HOSTS = ['*']"
+	    }
+	}
+	
+    ]
+}
