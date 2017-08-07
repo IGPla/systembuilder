@@ -168,12 +168,11 @@
 	    "command": "touch %(project_dir)s/config/uwsgi/reload.txt"
 	},
 	{
-	    "name": "create nginx configuration",
+	    "name": "create uwsgi supervisor configuration",
 	    "flag": "uwsgi",
 	    "action": "newfile",
 	    "filename": "%(project_dir)s/config/uwsgi_supervisor/%(project_name)s_uwsgi.conf",
 	    "filecontent": "[program:project_uwsgi]\ncommand=uwsgi /project/config/uwsgi.ini\nstdout_logfile=/var/log/uwsgi/project.log\nstderr_logfile=/var/log/uwsgi/project.err.log\nautostart=true\nautorestart=true\nredirect_stderr=true\nstopwaitsecs = 60\nstopsignal=INT"
 	}
-	
     ]
 }

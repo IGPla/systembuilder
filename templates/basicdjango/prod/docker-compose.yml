@@ -5,7 +5,6 @@ services:
     image: postgres
   nginx_prod:
     build: ./docker/nginx
-    command: /bin/bash /root/startup.sh
     volumes:
       - ./project/code/media:/var/www/media
       - ./project/code/static:/var/www/static
@@ -23,5 +22,4 @@ services:
       - ./project/config/uwsgi_supervisor:/etc/supervisor/conf.d
     depends_on:
       - db_prod
-      - nginx_prod
       
