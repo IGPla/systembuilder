@@ -6,6 +6,7 @@ import argparse
 import os
 import subprocess
 import json
+import utils
 
 TEMPLATE_DIRECTORY = "templates"
 PROJECT_DIRECTORY = "project"
@@ -22,6 +23,15 @@ def run_system_command(command):
     if DEBUG:
         print("Executing '%s'" % command)
     subprocess.run(command.split())
+
+def append(step, common_params):
+    """
+    Append content to file
+    """
+    _file = step.get("file") % common_params
+    with open(_file, "a") as fd:
+        content = step.get("filecontent") % common_params
+        fd.write(content)
 
 def new_file(step, common_params):
     """
@@ -103,6 +113,8 @@ def run_steps(steps, flags, common_params):
                 replacement(step, common_params)
             elif action == "newfile":
                 new_file(step, common_params)
+            elif action == "append":
+                append(step, common_params)
     
 def perform_start(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
@@ -160,14 +172,8 @@ def perform_action(base_dir, template_dir, project_dir, composer_file, config_fi
     elif action == "restart":
         perform_restart(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
 
-def get_base_dir():
-    """
-    Return base dir
-    """
-    return os.path.abspath(os.path.dirname(__file__))
-
 def parse_init():
-    base_template_dir = os.path.join(get_base_dir(), TEMPLATE_DIRECTORY)
+    base_template_dir = os.path.join(utils.get_base_dir(__file__), TEMPLATE_DIRECTORY)
     available_templates = [item for item in os.listdir(base_template_dir) if os.path.isdir(os.path.join(base_template_dir, item))]
     
     parser = argparse.ArgumentParser(description='Create new system based on a template')
@@ -188,7 +194,7 @@ if __name__ == "__main__":
     flags = args.flag
     DEBUG = args.debug
     
-    base_dir = get_base_dir()
+    base_dir = utils.get_base_dir(__file__)
     templates_dir = os.path.join(base_dir, TEMPLATE_DIRECTORY)
     template_dir = os.path.join(templates_dir, template, env)
     project_dir = os.path.join(base_dir, PROJECT_DIRECTORY)
