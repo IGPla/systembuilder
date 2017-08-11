@@ -7,6 +7,7 @@ import os
 import subprocess
 import json
 import utils
+import time
 
 TEMPLATE_DIRECTORY = "templates"
 PROJECT_DIRECTORY = "project"
@@ -127,7 +128,10 @@ def perform_start(base_dir, template_dir, project_dir, composer_base_command, ac
     run_steps(steps, flags, common_params)
     command = "%s up -d" % composer_base_command
     run_system_command(command)
-
+    time.sleep(2) # Time to wait for all services to be up
+    steps = config.get("afterstart", [])
+    run_steps(steps, flags, common_params)
+    
 def perform_stop(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
     Perform stop action
@@ -136,6 +140,9 @@ def perform_stop(base_dir, template_dir, project_dir, composer_base_command, act
     run_steps(steps, flags, common_params)
     command = "%s down" % composer_base_command
     subprocess.run(command.split())
+    time.sleep(2) # Time to wait for services to die
+    steps = config.get("afterstop", [])
+    run_steps(steps, flags, common_params)
 
 def perform_status(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
@@ -145,7 +152,7 @@ def perform_status(base_dir, template_dir, project_dir, composer_base_command, a
     run_steps(steps, flags, common_params)
     command = "%s ps" % composer_base_command
     subprocess.run(command.split())
-
+    
 def perform_restart(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
     Perform restart action

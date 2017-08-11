@@ -1,4 +1,4 @@
-#How to create new templates:
+# How to create new templates:
 
 New templates can be created to achieve any desired service structure. They must follow simple rules, and all will run as expected. These rules are the following:
 
@@ -8,7 +8,7 @@ New templates can be created to achieve any desired service structure. They must
 3. Create a docker-compose.yml file in every environment root folder with your docker compose build
 4. Create a builder-config.json file in every environment root folder with all steps for your build. Steps must follow a schema:
 {
-  "ACTION": [
+  "MOMENT": [
     {
       "name": "STEP_NAME",
       "flag": "STEP_FLAG",
@@ -25,23 +25,25 @@ New templates can be created to achieve any desired service structure. They must
 
 Allowed values:
 
-- ACTION: start, stop, status, restart (more in "actions" section)
+- MOMENT: start, afterstart, stop, afterstop, status, restart (more in "actions" section)
 - STEP_NAME: put here what you want
 - STEP_FLAG: a flag name (more in "flags" section)
 - STEP_ACTION: copyfile, runcommand, replacement, newfile, append (more in "step actions" section)
 - REST_OF_OPTIONS: each kind of action have their own custom options
 
-Actions:
+Moments:
 
-- start: this action starts the service with all dependencies. Steps with this action will be performed before docker starts the service
-- stop: this action stops the service with all dependencies. Steps with this action will be performed before docker stops the service
-- status: this actions reads the status of the service. Steps with this action will be performed before check
+- start: Steps in this moment will be performed before docker starts the service
+- afterstart: Steps in this moment will be performed after docker starts the service
+- stop: Steps in this moment will be performed before docker stops the service
+- afterstop: Steps in this moment will be performed after docker stops the service
+- status: Steps in this moment will be performed before check status
 - restart: applies start and stop, thus, start steps and stop steps will be performed
 
 Flags:
 
-Flags are the keywords that you decide to trigger events. Each step will have a flag. If user use builder.py with a flag "FLAG1", all steps with that flag in the running action will be performed.
-In other words, is a way to categorize a step in a given action and allow to filter every action to run only a subset of steps.
+Flags are the keywords that you decide to trigger steps. Each step will have a flag. If user use builder.py with a flag "FLAG1", all steps with that flag in the running action will be performed.
+In other words, this is a way to categorize a step in a given moment and allow to filter every moment to run only a subset of steps.
 
 Step actions:
 
