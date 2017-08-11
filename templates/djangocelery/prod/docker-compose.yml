@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+  db_prod:
+    image: postgres
+  tasks_queue_prod:
+    image: rabbitmq:3
+  tasks_results_prod:
+    image: redis
+  nginx_prod:
+    build: ./docker/nginx
+    volumes:
+      - ./project/code/media:/var/www/media
+      - ./project/code/static:/var/www/static
+      - ./project/logs/nginx:/var/log/nginx
+      - ./project/config/nginx:/etc/nginx/sites-enabled
+    ports:
+      - "80:80"
+  tasks_prod:
+    build: ./docker/tasks
+    command: celery -A djcl_proj_1 worker --loglevel=info
+    volumes:
+      - ./project/code:/project/code
+    depends_on:
+      - db_prod
+      - tasks_queue_prod
+      - tasks_results_prod
+  web_prod:
+    build: ./docker/web
+    command: /bin/bash /root/startup.sh
+    volumes:
+      - ./project/code:/project/code
+      - ./project/config/uwsgi:/project/config
+      - ./project/logs/uwsgi:/var/log/uwsgi
+      - ./project/config/uwsgi_supervisor:/etc/supervisor/conf.d
+    depends_on:
+      - db_prod
+      - tasks_queue_prod
+      - tasks_results_prod

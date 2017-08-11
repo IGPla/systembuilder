@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+  db_dev:
+    image: postgres
+  tasks_queue_dev:
+    image: rabbitmq:3
+  tasks_results_dev:
+    image: redis
+  tasks_dev:
+    build: ./docker/tasks
+    command: celery -A myproject1 worker --logleve=info
+    volumes:
+      - ./project/code:/project/code
+    depends_on:
+      - db_dev
+      - tasks_queue_dev
+      - tasks_results_dev
+  web_dev:
+    build: ./docker/web
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./project/code:/project/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_dev
+      - tasks_queue_dev
+      - tasks_results_dev
