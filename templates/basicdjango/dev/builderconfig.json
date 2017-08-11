@@ -53,12 +53,6 @@
 	    "command": "%(composer_base_command)s run web_dev django-admin.py startproject %(project_name)s ."
 	},
 	{
-	    "name": "run migrations",
-	    "flag": "new",
-	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_dev python3 manage.py migrate"
-	},
-	{
 	    "name": "initialize database setting",
 	    "flag": "new",
 	    "action": "replacement",
@@ -69,5 +63,13 @@
 	    }
 	}
 	
+    ],
+    "afterstart": [
+	{
+	    "name": "run migrations",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_dev python3 manage.py migrate"
+	}
     ]
 }

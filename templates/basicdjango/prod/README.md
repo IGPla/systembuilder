@@ -1,4 +1,14 @@
-#basicdjango prod
+# basicdjango prod
+
+Exposes a django project on production environment through port 80.
+Stack:
+- nginx
+- uwsgi
+- celery
+- rabbitmq
+- redis
+- django
+- postgres
 
 Required files:
 - systemrequirements.txt in project directory with all system requirements
@@ -9,3 +19,7 @@ Flags:
 - new: steps that will be performed only on new projects
 - nginx: rebuild nginx config files and folders
 - uwsgi: rebuild supervisor config files and folders
+
+Example of use:
+
+python3 builder.py --env prod --action start --template basicdjango --flag new --flag always --flag nginx --flag uwsgi my_project

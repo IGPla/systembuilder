@@ -138,12 +138,6 @@
 	    "command": "%(composer_base_command)s run web_prod django-admin.py startproject %(project_name)s ."
 	},
 	{
-	    "name": "run migrations",
-	    "flag": "new",
-	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_prod python3 manage.py migrate"
-	},
-	{
 	    "name": "initialize database setting",
 	    "flag": "new",
 	    "action": "replacement",
@@ -174,5 +168,14 @@
 	    "filename": "%(project_dir)s/config/uwsgi_supervisor/%(project_name)s_uwsgi.conf",
 	    "filecontent": "[program:project_uwsgi]\ncommand=uwsgi /project/config/uwsgi.ini\nstdout_logfile=/var/log/uwsgi/project.log\nstderr_logfile=/var/log/uwsgi/project.err.log\nautostart=true\nautorestart=true\nredirect_stderr=true\nstopwaitsecs = 60\nstopsignal=INT"
 	}
+    ],
+    "afterstart": [
+	{
+	    "name": "run migrations",
+	    "flag": "new",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run web_prod python3 manage.py migrate"
+	}
     ]
+    
 }
