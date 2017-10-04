@@ -4,6 +4,7 @@ Systems builder main script
 """
 import argparse
 import os
+import pwd
 import subprocess
 import json
 import utils
@@ -17,6 +18,7 @@ DOCKER_COMPOSE_FILE = "docker-compose.yml"
 CONFIG_FILE = "builderconfig.json"
 DEBUG = False
 
+
 def run_system_command(command):
     """
     Run system command
@@ -24,6 +26,7 @@ def run_system_command(command):
     if DEBUG:
         print("Executing '%s'" % command)
     subprocess.run(command.split())
+
 
 def append(step, common_params):
     """
@@ -34,6 +37,7 @@ def append(step, common_params):
         content = step.get("filecontent") % common_params
         fd.write(content)
 
+
 def new_file(step, common_params):
     """
     Create new file
@@ -42,7 +46,8 @@ def new_file(step, common_params):
     with open(_file, "w") as fd:
         content = step.get("filecontent") % common_params
         fd.write(content)
-    
+
+
 def replacement(step, common_params):
     """
     Perform replacement step
@@ -60,7 +65,7 @@ def replacement(step, common_params):
         for line in lines:
             if key in line:
                 found = True
-                
+
             if found and "{" in line:
                 open_dicts += 1
             if found and "[" in line:
@@ -76,12 +81,13 @@ def replacement(step, common_params):
                 if not open_dicts and not open_lists:
                     found = False
                     newlines.append(val)
-                
+
         lines = newlines
     with open(_file, "w") as fd:
         for line in lines:
             fd.write(line)
-    
+
+
 def copy_file(step, common_params):
     """
     Perform copy file step
@@ -91,12 +97,14 @@ def copy_file(step, common_params):
     command = "cp %s %s" % (fromfile, tofile)
     run_system_command(command)
 
+
 def run_command(step, common_params):
     """
     Perform run command step
     """
     command = step.get("command") % common_params
     run_system_command(command)
+
 
 def run_steps(steps, flags, common_params):
     """
@@ -116,7 +124,8 @@ def run_steps(steps, flags, common_params):
                 new_file(step, common_params)
             elif action == "append":
                 append(step, common_params)
-    
+
+
 def perform_start(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
     Perform start action
@@ -128,10 +137,11 @@ def perform_start(base_dir, template_dir, project_dir, composer_base_command, ac
     run_steps(steps, flags, common_params)
     command = "%s up -d" % composer_base_command
     run_system_command(command)
-    time.sleep(2) # Time to wait for all services to be up
+    time.sleep(2)  # Time to wait for all services to be up
     steps = config.get("afterstart", [])
     run_steps(steps, flags, common_params)
-    
+
+
 def perform_stop(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
     Perform stop action
@@ -140,9 +150,10 @@ def perform_stop(base_dir, template_dir, project_dir, composer_base_command, act
     run_steps(steps, flags, common_params)
     command = "%s down" % composer_base_command
     subprocess.run(command.split())
-    time.sleep(2) # Time to wait for services to die
+    time.sleep(2)  # Time to wait for services to die
     steps = config.get("afterstop", [])
     run_steps(steps, flags, common_params)
+
 
 def perform_status(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
@@ -152,45 +163,68 @@ def perform_status(base_dir, template_dir, project_dir, composer_base_command, a
     run_steps(steps, flags, common_params)
     command = "%s ps" % composer_base_command
     subprocess.run(command.split())
-    
+
+
 def perform_restart(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params):
     """
     Perform restart action
     """
-    perform_stop(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
-    perform_start(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
-    
+    perform_stop(base_dir, template_dir, project_dir, composer_base_command,
+                 action, env, projectname, flags, config, common_params)
+    perform_start(base_dir, template_dir, project_dir, composer_base_command,
+                  action, env, projectname, flags, config, common_params)
+
+
 def perform_action(base_dir, template_dir, project_dir, composer_file, config_file, action, env, projectname, flags):
     """
     Perform desired action
     """
     composer_base_command = "docker-compose -f %s" % (composer_file,)
+    current_user = pwd.getpwuid(os.getuid())
+    docker_command_user_fix = "--user=%i:%i" % (
+        current_user.pw_uid, current_user.pw_gid)
     if DEBUG:
-        print("Composer base command: '%s'" % composer_base_command) 
+        print("Composer base command: '%s'" % composer_base_command)
     with open(config_file, "r") as fd:
         config = json.loads(fd.read())
-    common_params = {'template_dir': template_dir, 'project_dir': project_dir, 'project_name': projectname, 'composer_base_command': composer_base_command}
+    common_params = {'template_dir': template_dir, 'project_dir':
+                     project_dir, 'project_name': projectname,
+                     'composer_base_command': composer_base_command,
+                     'docker_command_user_fix': docker_command_user_fix}
     if action == "start":
-        perform_start(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
+        perform_start(base_dir, template_dir, project_dir, composer_base_command,
+                      action, env, projectname, flags, config, common_params)
     elif action == "stop":
-        perform_stop(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
+        perform_stop(base_dir, template_dir, project_dir, composer_base_command,
+                     action, env, projectname, flags, config, common_params)
     elif action == "status":
-        perform_status(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
+        perform_status(base_dir, template_dir, project_dir, composer_base_command,
+                       action, env, projectname, flags, config, common_params)
     elif action == "restart":
-        perform_restart(base_dir, template_dir, project_dir, composer_base_command, action, env, projectname, flags, config, common_params)
+        perform_restart(base_dir, template_dir, project_dir, composer_base_command,
+                        action, env, projectname, flags, config, common_params)
+
 
 def parse_init():
-    base_template_dir = os.path.join(utils.get_base_dir(__file__), TEMPLATE_DIRECTORY)
-    available_templates = [item for item in os.listdir(base_template_dir) if os.path.isdir(os.path.join(base_template_dir, item))]
-    
-    parser = argparse.ArgumentParser(description='Create new system based on a template')
-    parser.add_argument('--template', action="store", choices=available_templates, required=True)
-    parser.add_argument('--action', action="store", choices=ACTIONS, required=True)
+    base_template_dir = os.path.join(
+        utils.get_base_dir(__file__), TEMPLATE_DIRECTORY)
+    available_templates = [item for item in os.listdir(
+        base_template_dir) if os.path.isdir(os.path.join(base_template_dir, item))]
+
+    parser = argparse.ArgumentParser(
+        description='Create new system based on a template')
+    parser.add_argument('--template', action="store",
+                        choices=available_templates, required=True)
+    parser.add_argument('--action', action="store",
+                        choices=ACTIONS, required=True)
     parser.add_argument('--env', action="store", choices=ENVS, required=True)
-    parser.add_argument('--flag', action="append", help="Flags to be applied. Only steps with included flags will be executed")
-    parser.add_argument('--debug', action="store_true", help="Add this argument to get extra verbosity on each command")
+    parser.add_argument('--flag', action="append",
+                        help="Flags to be applied. Only steps with included flags will be executed")
+    parser.add_argument('--debug', action="store_true",
+                        help="Add this argument to get extra verbosity on each command")
     parser.add_argument('projectname', action="store")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_init()
@@ -200,7 +234,7 @@ if __name__ == "__main__":
     projectname = args.projectname
     flags = args.flag
     DEBUG = args.debug
-    
+
     base_dir = utils.get_base_dir(__file__)
     templates_dir = os.path.join(base_dir, TEMPLATE_DIRECTORY)
     template_dir = os.path.join(templates_dir, template, env)
@@ -208,4 +242,5 @@ if __name__ == "__main__":
     composer_file = os.path.join(template_dir, DOCKER_COMPOSE_FILE)
     config_file = os.path.join(template_dir, CONFIG_FILE)
 
-    perform_action(base_dir, template_dir, project_dir, composer_file, config_file, action, env, projectname, flags)
+    perform_action(base_dir, template_dir, project_dir,
+                   composer_file, config_file, action, env, projectname, flags)

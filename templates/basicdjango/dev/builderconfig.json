@@ -50,7 +50,7 @@
 	    "name": "create django project",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_dev django-admin.py startproject %(project_name)s ."
+	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev django-admin.py startproject %(project_name)s ."
 	},
 	{
 	    "name": "initialize database setting",
@@ -69,7 +69,7 @@
 	    "name": "run migrations",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_dev python3 manage.py migrate"
+	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev python3 manage.py migrate"
 	}
     ]
 }

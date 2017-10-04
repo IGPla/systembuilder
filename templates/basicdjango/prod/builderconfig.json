@@ -76,10 +76,22 @@
 	    "name": "remove old uwsgi supervisor config",
 	    "flag": "nginx",
 	    "action": "runcommand",
-	    "command": "rm -rf %(project_dir)s/logs/uwsgi_supervisor"
+	    "command": "rm -rf %(project_dir)s/config/uwsgi_supervisor"
 	},
 	{
 	    "name": "create uwsgi supervisor config",
+	    "flag": "uwsgi",
+	    "action": "runcommand",
+	    "command": "mkdir -p %(project_dir)s/config/uwsgi_supervisor"
+	},
+	{
+	    "name": "remove old uwsgi supervisor logs",
+	    "flag": "nginx",
+	    "action": "runcommand",
+	    "command": "rm -rf %(project_dir)s/logs/uwsgi_supervisor"
+	},
+	{
+	    "name": "create uwsgi supervisor logs",
 	    "flag": "uwsgi",
 	    "action": "runcommand",
 	    "command": "mkdir -p %(project_dir)s/logs/uwsgi_supervisor"
@@ -135,7 +147,7 @@
 	    "name": "create django project",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_prod django-admin.py startproject %(project_name)s ."
+	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_prod django-admin.py startproject %(project_name)s ."
 	},
 	{
 	    "name": "initialize database setting",
@@ -174,7 +186,7 @@
 	    "name": "run migrations",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run web_prod python3 manage.py migrate"
+	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_prod python3 manage.py migrate"
 	}
     ]
     

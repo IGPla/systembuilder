@@ -70,3 +70,4 @@ There are several variables available while you define your step actions. These 
 - project_dir: project base directory
 - project_name: the name of your project
 - composer_base_command: base command for docker composer. Useful for "runcommand" step action, when you want to run actions inside your containers (run a command, build container...)
+- docker_command_user_fix: fix to be used with your commands inside docker. It's used to fix the issue with root user (it fixes it with current user)
