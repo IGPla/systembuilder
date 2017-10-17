@@ -15,7 +15,8 @@ Required files:
 Flags:
 - always: required steps for all situations
 - new: steps that will be performed only on new projects
+- celery: rebuild celery config files and folders
 
 Example of use:
 
-python3 builder.py --env dev --action start --template djangocelery --flag new --flag always my_project
+python3 builder.py --env dev --action start --template djangocelery --flag new --flag always --flag celery my_project

@@ -19,7 +19,8 @@ Flags:
 - new: steps that will be performed only on new projects
 - nginx: rebuild nginx config files and folders
 - uwsgi: rebuild supervisor config files and folders
+- celery: rebuild celery config files and folders
 
 Example of use:
 
-python3 builder.py --env prod --action start --template djangocelery --flag new --flag always --flag nginx --flag uwsgi my_project
+python3 builder.py --env prod --action start --template djangocelery --flag new --flag always --flag nginx --flag uwsgi --flag celery my_project

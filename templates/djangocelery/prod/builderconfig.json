@@ -216,21 +216,21 @@
 	},
 		{
 	    "name": "create celery config file",
-	    "flag": "new",
+	    "flag": "celery",
 	    "action": "append",
 	    "file": "%(project_dir)s/code/%(project_name)s/celery.py",
 	    "filecontent": "\nfrom __future__ import absolute_import, unicode_literals\nimport os\nfrom celery import Celery\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', '%(project_name)s.settings')\napp = Celery('%(project_name)s')\napp.config_from_object('django.conf:settings', namespace='CELERY')\napp.autodiscover_tasks()"
 	},
 	{
 	    "name": "add __init__.py celery imports",
-	    "flag": "new",
+	    "flag": "celery",
 	    "action": "append",
 	    "file": "%(project_dir)s/code/%(project_name)s/__init__.py",
 	    "filecontent": "\nfrom __future__ import absolute_import, unicode_literals\nfrom .celery import app as celery_app\n__all__ = ['celery_app']"
 	},
 	{
 	    "name": "add basic celery config in settings",
-	    "flag": "new",
+	    "flag": "celery",
 	    "action": "append",
 	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
 	    "filecontent": "\nCELERY_BROKER_URL = 'amqp://guest:guest@tasks_queue_prod:5672//'\nCELERY_RESULT_BACKEND = 'redis://tasks_results_prod:6379/0'"
