@@ -47,7 +47,7 @@ In other words, this is a way to categorize a step in a given moment and allow t
 
 Step actions:
 
-Currently there are 4 step actions
+Currently there are 5 step actions
 1. copyfile: performs a copy of a file. It is useful to move files in and out, allowing your docker images to be dynamic in their compilation. Required fields:
   - fromfile: filepath of the source file
   - tofile: filepath for the destiny file
