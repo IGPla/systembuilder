@@ -1,0 +1,8 @@
+{
+    "docker_db_name": "db_dev",
+    "docker_tasks_queue_name": "tasks_queue_dev",
+    "docker_tasks_results_name": "tasks_results_dev",
+    "docker_tasks_worker_name": "tasks_dev",
+    "docker_web_name": "web_dev",
+    "docker_host_port": "8000"
+}

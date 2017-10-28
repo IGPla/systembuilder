@@ -20,6 +20,12 @@
 	    "tofile": "%(template_dir)s/docker/web/common_systemrequirements.txt"
 	},
 	{
+	    "name": "ensure project system requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/systemrequirements.txt"
+	},
+	{
 	    "name": "copy project system requirements (web)",
 	    "flag": "always",
 	    "action": "copyfile",
@@ -32,6 +38,12 @@
 	    "action": "copyfile",
 	    "fromfile": "%(template_dir)s/requirements.txt",
 	    "tofile": "%(template_dir)s/docker/web/common_requirements.txt"
+	},
+	{
+	    "name": "ensure project python requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/requirements.txt"
 	},
 	{
 	    "name": "copy project python requirements (web)",
@@ -72,19 +84,19 @@
 	    "name": "build docker web dev",
 	    "flag": "always",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s build web_dev"
+	    "command": "%(composer_base_command)s build %(docker_web_name)s"
 	},
 	{
 	    "name": "build docker tasks dev",
 	    "flag": "always",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s build tasks_dev"
+	    "command": "%(composer_base_command)s build %(docker_tasks_worker_name)s"
 	},
 	{
 	    "name": "create django project",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev django-admin.py startproject %(project_name)s ."
+	    "command": "%(composer_base_command)s run --rm %(docker_command_user_fix)s %(docker_web_name)s django-admin.py startproject %(project_name)s ."
 	},
 	{
 	    "name": "initialize database setting",
@@ -92,7 +104,7 @@
 	    "action": "replacement",
 	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
 	    "replace": {
-		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': 'db_dev', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
+		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': '%(docker_db_name)s', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
 		"ALLOWED_HOSTS": "ALLOWED_HOSTS = ['*']"
 	    }
 	},
@@ -115,7 +127,7 @@
 	    "flag": "celery",
 	    "action": "append",
 	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
-	    "filecontent": "\nCELERY_BROKER_URL = 'amqp://guest:guest@tasks_queue_dev:5672//'\nCELERY_RESULT_BACKEND = 'redis://tasks_results_dev:6379/0'"
+	    "filecontent": "\nCELERY_BROKER_URL = 'amqp://guest:guest@%(docker_tasks_queue_name)s:5672//'\nCELERY_RESULT_BACKEND = 'redis://%(docker_tasks_results_name)s:6379/0'"
 	},
 	{
 	    "name": "fix docker compose tasks celery name",
@@ -132,7 +144,13 @@
 	    "name": "run migrations",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev python3 manage.py migrate"
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s python3 manage.py migrate"
+	},
+	{
+	    "name": "final permissions fix",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s chown -R %(user_uid)s:%(user_gid)s ."
 	}
     ]
 }

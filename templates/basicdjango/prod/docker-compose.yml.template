@@ -1,9 +1,9 @@
 version: '2'
 
 services:
-  db_prod:
+  %(docker_db_name)s:
     image: postgres
-  nginx_prod:
+  %(docker_proxy_name)s:
     build: ./docker/nginx
     volumes:
       - ./project/code/media:/var/www/media
@@ -11,8 +11,8 @@ services:
       - ./project/logs/nginx:/var/log/nginx
       - ./project/config/nginx:/etc/nginx/sites-enabled
     ports:
-      - "80:80"
-  web_prod:
+      - "%(docker_host_port)s:80"
+  %(docker_web_name)s:
     build: ./docker/web
     command: /bin/bash /root/startup.sh
     volumes:
@@ -21,5 +21,5 @@ services:
       - ./project/logs/uwsgi:/var/log/uwsgi
       - ./project/config/uwsgi_supervisor:/etc/supervisor/conf.d
     depends_on:
-      - db_prod
+      - %(docker_db_name)s
       

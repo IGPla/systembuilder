@@ -104,6 +104,12 @@
 	    "tofile": "%(template_dir)s/docker/web/common_systemrequirements.txt"
 	},
 	{
+	    "name": "ensure project system requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/systemrequirements.txt"
+	},
+	{
 	    "name": "copy project system requirements",
 	    "flag": "always",
 	    "action": "copyfile",
@@ -118,6 +124,12 @@
 	    "tofile": "%(template_dir)s/docker/web/common_requirements.txt"
 	},
 	{
+	    "name": "ensure project python requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/requirements.txt"
+	},
+	{
 	    "name": "copy project python requirements",
 	    "flag": "always",
 	    "action": "copyfile",
@@ -129,25 +141,25 @@
 	    "flag": "nginx",
 	    "action": "newfile",
 	    "filename": "%(project_dir)s/config/nginx/%(project_name)s.conf",
-	    "filecontent": "server {\n       listen 80 default_server;\n       server_name localhost;\n\n       access_log /var/log/nginx/nginx.access.log;\n       error_log /var/log/nginx/nginx.error.log;\n\n       location / {\n                uwsgi_pass web_prod:49001;\n                include uwsgi_params;\n        }\n\n        location /media/ {\n                 alias /var/www/media/;\n        }\n\n        location /static/ {\n                 alias /var/www/static/;\n        }\n}"
+	    "filecontent": "server {\n       listen 80 default_server;\n       server_name localhost;\n\n       access_log /var/log/nginx/nginx.access.log;\n       error_log /var/log/nginx/nginx.error.log;\n\n       location / {\n                uwsgi_pass %(docker_web_name)s:49001;\n                include uwsgi_params;\n        }\n\n        location /media/ {\n                 alias /var/www/media/;\n        }\n\n        location /static/ {\n                 alias /var/www/static/;\n        }\n}"
 	},
 	{
 	    "name": "build docker nginx prod",
 	    "flag": "always",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s build nginx_prod"
+	    "command": "%(composer_base_command)s build %(docker_proxy_name)s"
 	},
 	{
 	    "name": "build docker web prod",
 	    "flag": "always",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s build web_prod"
+	    "command": "%(composer_base_command)s build %(docker_web_name)s"
 	},
 	{
 	    "name": "create django project",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_prod django-admin.py startproject %(project_name)s ."
+	    "command": "%(composer_base_command)s run --rm %(docker_command_user_fix)s %(docker_web_name)s django-admin.py startproject %(project_name)s ."
 	},
 	{
 	    "name": "initialize database setting",
@@ -155,7 +167,7 @@
 	    "action": "replacement",
 	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
 	    "replace": {
-		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': 'db_prod', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
+		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': '%(docker_db_name)s', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
 		"ALLOWED_HOSTS": "ALLOWED_HOSTS = ['*']",
 		"DEBUG": "DEBUG = False"
 	    }
@@ -186,7 +198,13 @@
 	    "name": "run migrations",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_prod python3 manage.py migrate"
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s python3 manage.py migrate"
+	},
+	{
+	    "name": "final permissions fix",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s chown -R %(user_uid)s:%(user_gid)s ."
 	}
     ]
     

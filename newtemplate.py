@@ -5,16 +5,18 @@ Utility to create scaffold for new templates
 import argparse
 import os
 import subprocess
-import json
 import utils
 
 DEBUG = False
 
+
 def parse_init():
     parser = argparse.ArgumentParser(description='Create new template scaffold')
-    parser.add_argument('--debug', action="store_true", help="Add this argument to get extra verbosity on each command")
+    parser.add_argument('--debug', action="store_true",
+                        help="Add this argument to get extra verbosity on each command")
     parser.add_argument('templatename', action="store")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = parse_init()
@@ -32,11 +34,13 @@ if __name__ == "__main__":
             "touch %s/README.md" % template_dir,
             "touch %s/dev/README.md" % template_dir,
             "touch %s/prod/README.md" % template_dir,
-            "touch %s/dev/docker-compose.yml" % template_dir,
-            "touch %s/prod/docker-compose.yml" % template_dir,
+            "touch %s/dev/docker-compose.yml.template" % template_dir,
+            "touch %s/prod/docker-compose.yml.template" % template_dir,
+            "touch %s/dev/defaultvars.json" % template_dir,
+            "touch %s/prod/defaultvars.json" % template_dir,
             "touch %s/dev/builderconfig.json" % template_dir,
             "touch %s/prod/builderconfig.json" % template_dir,
-            ]:
+    ]:
         if DEBUG:
             print("Executing '%s'" % command)
             subprocess.run(command.split())

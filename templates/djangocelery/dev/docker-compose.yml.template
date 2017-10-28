@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+  %(docker_db_name)s:
+    image: postgres
+  %(docker_tasks_queue_name)s:
+    image: rabbitmq:3
+  %(docker_tasks_results_name)s:
+    image: redis
+  %(docker_tasks_worker_name)s:
+    build: ./docker/tasks
+    command: celery -A %(project_name)s worker --logleve=info
+    volumes:
+      - ./project/code:/project/code
+    depends_on:
+      - %(docker_db_name)s
+      - %(docker_tasks_queue_name)s
+      - %(docker_tasks_results_name)s
+  %(docker_web_name)s:
+    build: ./docker/web
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./project/code:/project/code
+    ports:
+      - "%(docker_host_port)s:8000"
+    depends_on:
+      - %(docker_db_name)s
+      - %(docker_tasks_queue_name)s
+      - %(docker_tasks_results_name)s

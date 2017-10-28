@@ -20,6 +20,12 @@
 	    "tofile": "%(template_dir)s/docker/web/common_systemrequirements.txt"
 	},
 	{
+	    "name": "ensure project system requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/systemrequirements.txt"
+	},
+	{
 	    "name": "copy project system requirements",
 	    "flag": "always",
 	    "action": "copyfile",
@@ -34,6 +40,12 @@
 	    "tofile": "%(template_dir)s/docker/web/common_requirements.txt"
 	},
 	{
+	    "name": "ensure project python requirements exists",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "touch %(project_dir)s/requirements.txt"
+	},
+	{
 	    "name": "copy project python requirements",
 	    "flag": "always",
 	    "action": "copyfile",
@@ -44,13 +56,13 @@
 	    "name": "build docker web dev",
 	    "flag": "always",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s build web_dev"
+	    "command": "%(composer_base_command)s build %(docker_web_name)s"
 	},
 	{
 	    "name": "create django project",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev django-admin.py startproject %(project_name)s ."
+	    "command": "%(composer_base_command)s run --rm %(docker_command_user_fix)s %(docker_web_name)s django-admin.py startproject %(project_name)s ."
 	},
 	{
 	    "name": "initialize database setting",
@@ -58,7 +70,7 @@
 	    "action": "replacement",
 	    "file": "%(project_dir)s/code/%(project_name)s/settings.py",
 	    "replace": {
-		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': 'db_dev', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
+		"DATABASES": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql', \n        'HOST': '%(docker_db_name)s', \n        'NAME': 'postgres', \n        'PORT': 5432, \n        'USER': 'postgres'\n    }\n}",
 		"ALLOWED_HOSTS": "ALLOWED_HOSTS = ['*']"
 	    }
 	}
@@ -69,7 +81,13 @@
 	    "name": "run migrations",
 	    "flag": "new",
 	    "action": "runcommand",
-	    "command": "%(composer_base_command)s run %(docker_command_user_fix)s web_dev python3 manage.py migrate"
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s python3 manage.py migrate"
+	},
+	{
+	    "name": "final permissions fix",
+	    "flag": "always",
+	    "action": "runcommand",
+	    "command": "%(composer_base_command)s run --rm %(docker_web_name)s chown -R %(user_uid)s:%(user_gid)s ."
 	}
     ]
 }

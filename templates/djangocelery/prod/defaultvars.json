@@ -1,0 +1,9 @@
+{
+    "docker_db_name": "db_prod",
+    "docker_tasks_queue_name": "tasks_queue_prod",
+    "docker_tasks_results_name": "tasks_results_prod",
+    "docker_tasks_worker_name": "tasks_prod",
+    "docker_proxy_name": "nginx_prod",
+    "docker_web_name": "web_prod",
+    "docker_host_port": "80"
+}
