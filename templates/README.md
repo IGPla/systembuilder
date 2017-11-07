@@ -7,6 +7,7 @@ New templates can be created to achieve any desired service structure. They must
 2. Create a README file in every environment folder to store all information about it
 3. Create a docker-compose.yml.template file in every environment root folder with your docker compose build template (prepared to be filled with project vars)
 4. Create defaultvars.json with all default values for project vars. Simple dict format
+5. Create preserveflags.json with a list of flags that must be preserved
 5. Create a builder-config.json file in every environment root folder with all steps for your build. Steps must follow a schema:
 {
   "MOMENT": [
@@ -46,6 +47,7 @@ New templates can be created to achieve any desired service structure. They must
 
 Flags are the keywords that you decide to trigger steps. Each step will have a flag. If user use builder.py with a flag "FLAG1", all steps with that flag in the running action will be performed.
 In other words, this is a way to categorize a step in a given moment and allow to filter every moment to run only a subset of steps.
+preserveflags.json must contain all flags that must be preserved for future calls. They should be the ones that do not destroy or change content.
 
 ## Step actions:
 

@@ -186,7 +186,7 @@ def perform_action(base_dir, template_dir, project_dir, composer_file,
     """
     Perform desired action
     """
-    composer_base_command = "docker-compose -f %s" % (composer_file,)
+    composer_base_command = "docker-compose -p %s -f %s" % (projectname, composer_file,)
     current_user = pwd.getpwuid(os.getuid())
     user_uid = str(current_user.pw_uid)
     user_gid = str(current_user.pw_gid)
@@ -254,7 +254,7 @@ def parse_init(required=True):
     return parser.parse_args()
 
 
-def base_configuration(base_dir):
+def base_configuration(base_dir, templates_dir):
     """
     Parse configuration and update argsconf.json
     """
@@ -283,11 +283,14 @@ def base_configuration(base_dir):
         uservars = args.var
 
     with open(args_conf_file, "w") as fd:
+        preserve_flags = os.path.join(templates_dir, template, env, "preserveflags.json")
+        with open(preserve_flags, "r") as pffd:
+            pflags = json.loads(pffd.read())
         fd.write(json.dumps({'template': template,
                              'action': action,
                              'env': env,
                              'projectname': projectname,
-                             'flags': flags,
+                             'flags': [flag for flag in flags if flag in pflags],
                              'uservars': uservars}))
 
     return template, action, env, projectname, flags, uservars
@@ -295,8 +298,10 @@ def base_configuration(base_dir):
 
 if __name__ == "__main__":
     base_dir = utils.get_base_dir(__file__)
+    templates_dir = os.path.join(base_dir, TEMPLATE_DIRECTORY)
 
-    template, action, env, projectname, flags, uservars = base_configuration(base_dir)
+    template, action, env, projectname, flags, uservars = base_configuration(base_dir,
+                                                                             templates_dir)
 
     if "new" in flags:
         ok = None
@@ -306,7 +311,6 @@ if __name__ == "__main__":
         if ok == "n":
             exit(0)
 
-    templates_dir = os.path.join(base_dir, TEMPLATE_DIRECTORY)
     template_dir = os.path.join(templates_dir, template, env)
     project_dir = os.path.join(base_dir, PROJECT_DIRECTORY)
     composer_template_file = os.path.join(template_dir, DOCKER_COMPOSE_TEMPLATE_FILE)
@@ -316,9 +320,10 @@ if __name__ == "__main__":
     with open(os.path.join(template_dir, "defaultvars.json"), "r") as fd:
         pvars = json.loads(fd.read())
 
-    for uvar in uservars:
-        key, val = uvar.split(":")
-        pvars[key] = val
+    if uservars:
+        for uvar in uservars:
+            key, val = uvar.split(":")
+            pvars[key] = val
 
     perform_action(base_dir, template_dir, project_dir,
                    composer_file, composer_template_file, config_file,
