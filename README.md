@@ -1,4 +1,4 @@
-# systembuilder
+# System Builder
 
 A system builder based on docker compose and templates. With the right template you will be able to start working on your project, completely configured and up to run in seconds
 
@@ -23,5 +23,13 @@ A tool to create new template scaffold is added. It's called newtemplate.py. To 
 ```
 python3 newtemplate.py YOUR_NEW_TEMPLATE_NAME
 ```
+
+To run commands inside docker containers, there's a tool created for this purpose
+
+```
+python3 commander DOCKER_CONTAINER_NAME "COMMAND"
+```
+
+Where DOCKER_CONTAINER_NAME can be retrieved from builder.py status action and command is an arbitratry command that will run in the provided container
 
 IMPORTANT NOTE: all scripts in this project are created using python3. Compatibility with python2 is not warranted.
