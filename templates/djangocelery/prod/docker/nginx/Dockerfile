@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM debian:latest
 RUN apt-get update
 RUN apt-get install nginx -y
 RUN mkdir -p /var/www/media
